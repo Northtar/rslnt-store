@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>RSLNT — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--black:#080808;--white:#f0ece4;--off:#111;--bone:#c9c0b0;--accent:#b5a07a;--red:#8b1a1a}
+body{background:var(--black);color:var(--white);font-family:"Cormorant Garamond",serif;min-height:100vh}
+.wrap{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem}
+h1{font-family:"Bebas Neue",sans-serif;font-size:2.6rem;letter-spacing:.08em;margin-bottom:.3rem}
+.sub{font-family:"Space Mono",monospace;font-size:.6rem;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin-bottom:2rem;display:block}
+.login-box{max-width:380px;margin:8rem auto;text-align:center}
+.login-box input{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(201,192,176,.3);color:var(--white);font-family:"Cormorant Garamond",serif;font-size:1.2rem;padding:.8rem 0;text-align:center;outline:none;margin-bottom:1.5rem}
+.login-box input:focus{border-color:var(--accent)}
+.btn{font-family:"Space Mono",monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;padding:.8rem 2rem;border:1px solid var(--white);background:var(--white);color:var(--black);cursor:pointer;transition:all .25s}
+.btn:hover{background:var(--accent);border-color:var(--accent)}
+.btn-outline{background:transparent;color:var(--bone);border-color:rgba(201,192,176,.3)}
+.btn-outline:hover{background:rgba(201,192,176,.1)}
+.btn-danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn-danger:hover{background:#a02020}
+.tabs{display:flex;gap:.5rem;margin-bottom:2rem;border-bottom:1px solid rgba(201,192,176,.1)}
+.tab{font-family:"Space Mono",monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;padding:.8rem 1.4rem;background:none;border:none;color:var(--bone);cursor:pointer;opacity:.5;border-bottom:2px solid transparent}
+.tab.active{opacity:1;color:var(--white);border-bottom-color:var(--accent)}
+.panel{display:none}
+.panel.active{display:block}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+table{width:100%;border-collapse:collapse}
+th{font-family:"Space Mono",monospace;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);text-align:left;padding:.8rem;border-bottom:1px solid rgba(201,192,176,.15)}
+td{padding:.9rem .8rem;border-bottom:1px solid rgba(201,192,176,.07);font-size:.95rem;vertical-align:middle}
+td img{width:44px;height:55px;object-fit:cover;background:#1a1a1a}
+.badge{font-family:"Space Mono",monospace;font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .5rem;border-radius:2px}
+.badge.yes{background:rgba(181,160,122,.2);color:var(--accent)}
+.badge.no{background:rgba(139,26,26,.2);color:#e08080}
+.row-actions{display:flex;gap:.5rem}
+.row-actions button{font-family:"Space Mono",monospace;font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid rgba(201,192,176,.25);color:var(--bone);padding:.3rem .6rem;cursor:pointer;transition:all .2s}
+.row-actions button:hover{background:var(--white);color:var(--black)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:none;align-items:center;justify-content:center;padding:1.5rem}
+.modal-overlay.open{display:flex}
+.modal{background:#111;border:1px solid rgba(201,192,176,.15);max-width:500px;width:100%;max-height:90vh;overflow-y:auto;padding:2rem}
+.modal h3{font-family:"Bebas Neue",sans-serif;font-size:1.6rem;letter-spacing:.08em;margin-bottom:1.5rem}
+.field{margin-bottom:1.2rem}
+.field label{font-family:"Space Mono",monospace;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bone);opacity:.7;display:block;margin-bottom:.5rem}
+.field input,.field textarea,.field select{width:100%;background:#0a0a0a;border:1px solid rgba(201,192,176,.2);color:var(--white);font-family:"Cormorant Garamond",serif;font-size:1rem;padding:.6rem .7rem;outline:none}
+.field textarea{resize:vertical;min-height:80px}
+.field-row{display:flex;gap:1rem}
+.checkbox-row{display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem}
+.checkbox-row input{width:auto}
+.modal-actions{display:flex;gap:.7rem;margin-top:1.5rem}
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2.5rem}
+.stat-card{background:var(--off);border:1px solid rgba(201,192,176,.1);padding:1.4rem}
+.stat-card .val{font-family:"Bebas Neue",sans-serif;font-size:2.2rem;color:var(--accent)}
+.stat-card .lbl{font-family:"Space Mono",monospace;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bone);opacity:.6;margin-top:.2rem}
+.empty-msg{text-align:center;padding:3rem;font-style:italic;color:var(--bone);opacity:.5}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--off);border:1px solid rgba(201,192,176,.2);color:var(--white);font-family:"Space Mono",monospace;font-size:.58rem;letter-spacing:.12em;padding:.8rem 1.5rem;z-index:300;opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.image-preview{width:80px;height:100px;object-fit:cover;background:#1a1a1a;margin-top:.5rem;display:none}
+.order-detail{font-family:"Space Mono",monospace;font-size:.62rem;line-height:1.6;color:var(--bone)}
+select option{background:#111}
+@media(max-width:700px){
+  table,thead,tbody,th,td,tr{display:block}
+  thead{display:none}
+  tr{margin-bottom:1rem;border:1px solid rgba(201,192,176,.1);padding:.8rem}
+  td{border:none;padding:.4rem 0;display:flex;justify-content:space-between;align-items:center}
+  td::before{content:attr(data-label);font-family:"Space Mono",monospace;font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-right:1rem}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN -->
+<div class="login-box" id="loginBox">
+  <h1 style="margin-bottom:.5rem">RSLNT</h1>
+  <span class="sub">Admin Access</span>
+  <input type="password" id="adminPassword" placeholder="Enter password" />
+  <button class="btn" id="loginBtn" style="width:100%">Login</button>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="wrap" id="adminWrap" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+    <div>
+      <h1>RSLNT Admin</h1>
+      <span class="sub">Store Management</span>
+    </div>
+    <button class="btn btn-outline" id="logoutBtn">Logout</button>
+  </div>
+
+  <div class="stat-cards" id="statCards"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="products">Products</button>
+    <button class="tab" data-tab="orders">Orders</button>
+    <button class="tab" data-tab="messages">Messages</button>
+    <button class="tab" data-tab="newsletter">Newsletter</button>
+  </div>
+
+  <!-- PRODUCTS PANEL -->
+  <div class="panel active" id="panel-products">
+    <div class="toolbar">
+      <span class="sub" style="margin:0">Manage Products</span>
+      <button class="btn" id="addProductBtn">+ Add Product</button>
+    </div>
+    <table>
+      <thead><tr><th>Image</th><th>Title</th><th>Price</th><th>Category</th><th>Sizes</th><th>Available</th><th>Actions</th></tr></thead>
+      <tbody id="productsTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ORDERS PANEL -->
+  <div class="panel" id="panel-orders">
+    <span class="sub">Customer Orders</span>
+    <table>
+      <thead><tr><th>Customer</th><th>Email</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody id="ordersTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- MESSAGES PANEL -->
+  <div class="panel" id="panel-messages">
+    <span class="sub">Contact Messages</span>
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Message</th><th>Date</th></tr></thead>
+      <tbody id="messagesTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- NEWSLETTER PANEL -->
+  <div class="panel" id="panel-newsletter">
+    <span class="sub">Newsletter Subscribers</span>
+    <table>
+      <thead><tr><th>Email</th><th>Subscribed On</th></tr></thead>
+      <tbody id="newsletterTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="productModalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Add Product</h3>
+    <input type="hidden" id="productId" />
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="productTitle" placeholder="e.g. RSLNT Lagos Tee" />
+    </div>
+    <div class="field-row">
+      <div class="field" style="flex:1">
+        <label>Price (₦)</label>
+        <input type="number" id="productPrice" placeholder="35000" />
+      </div>
+      <div class="field" style="flex:1">
+        <label>Category</label>
+        <select id="productCategory">
+          <option>Tops</option>
+          <option>Bottoms</option>
+          <option>Outerwear</option>
+          <option>Accessories</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Sizes (comma separated)</label>
+      <input type="text" id="productSizes" placeholder="S,M,L,XL" />
+    </div>
+    <div class="field">
+      <label>Tag (optional — e.g. New, Limited)</label>
+      <input type="text" id="productTag" placeholder="New" />
+    </div>
+    <div class="field">
+      <label>Description</label>
+      <textarea id="productDescription" placeholder="Product description..."></textarea>
+    </div>
+    <div class="field">
+      <label>Product Image</label>
+      <input type="file" id="productImageFile" accept="image/*" />
+      <img id="imagePreview" class="image-preview" />
+      <input type="hidden" id="productImageUrl" />
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="productAvailable" checked />
+      <label style="margin:0" for="productAvailable">Available for purchase</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="saveProductBtn" style="flex:1">Save Product</button>
+      <button class="btn btn-outline" id="cancelProductBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://xsobheivzumvwacrhyis.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzb2JoZWl2enVtdndhY3JoeWlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MTk4OTYsImV4cCI6MjA5NzM5NTg5Nn0.XnAR1T5x3W1nnOrmnfs6UATW6DXuN8QnnwqU1QspRss";
+const ADMIN_PASSWORD = "rslnt2026"; // Change this!
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+async function sbFetch(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+  if (!res.ok) { const t = await res.text(); throw new Error(t); }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ── AUTH ──────────────────────────────────────
+function checkAuth() {
+  if (sessionStorage.getItem("rslnt_admin_auth") === "true") {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("adminWrap").style.display = "block";
+    loadAllData();
+  }
+}
+document.getElementById("loginBtn").addEventListener("click", () => {
+  const pw = document.getElementById("adminPassword").value;
+  if (pw === ADMIN_PASSWORD) {
+    sessionStorage.setItem("rslnt_admin_auth", "true");
+    checkAuth();
+  } else {
+    showToast("Incorrect password");
+  }
+});
+document.getElementById("adminPassword").addEventListener("keypress", e => { if(e.key==="Enter") document.getElementById("loginBtn").click(); });
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  sessionStorage.removeItem("rslnt_admin_auth");
+  location.reload();
+});
+
+// ── TABS ──────────────────────────────────────
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-"+tab.dataset.tab).classList.add("active");
+  });
+});
+
+// ── LOAD ALL DATA ─────────────────────────────
+async function loadAllData() {
+  await Promise.all([loadProducts(), loadOrders(), loadMessages(), loadNewsletter()]);
+  renderStats();
+}
+
+let allProducts = [], allOrders = [], allMessages = [], allSubscribers = [];
+
+function renderStats() {
+  const totalRevenue = allOrders.reduce((s,o)=>s+parseFloat(o.total),0);
+  document.getElementById("statCards").innerHTML = `
+    <div class="stat-card"><div class="val">${allProducts.length}</div><div class="lbl">Products</div></div>
+    <div class="stat-card"><div class="val">${allOrders.length}</div><div class="lbl">Orders</div></div>
+    <div class="stat-card"><div class="val">₦${totalRevenue.toLocaleString()}</div><div class="lbl">Total Revenue</div></div>
+    <div class="stat-card"><div class="val">${allSubscribers.length}</div><div class="lbl">Subscribers</div></div>
+  `;
+}
+
+// ── PRODUCTS ──────────────────────────────────
+async function loadProducts() {
+  allProducts = await sbFetch("products?select=*&order=created_at.desc");
+  renderProductsTable();
+}
+
+function renderProductsTable() {
+  const body = document.getElementById("productsTableBody");
+  if (allProducts.length === 0) {
+    body.innerHTML = `<tr><td colspan="7" class="empty-msg">No products yet. Click "+ Add Product" to create one.</td></tr>`;
+    return;
+  }
+  body.innerHTML = allProducts.map(p => `
+    <tr>
+      <td data-label="Image">${p.image_url ? `<img src="${p.image_url}">` : "—"}</td>
+      <td data-label="Title">${p.title}</td>
+      <td data-label="Price">₦${Number(p.price).toLocaleString()}</td>
+      <td data-label="Category">${p.category}</td>
+      <td data-label="Sizes">${(p.sizes||[]).join(", ")}</td>
+      <td data-label="Available"><span class="badge ${p.available?'yes':'no'}">${p.available?'Yes':'No'}</span></td>
+      <td data-label="Actions">
+        <div class="row-actions">
+          <button onclick="editProduct('${p.id}')">Edit</button>
+          <button onclick="deleteProduct('${p.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>`).join("");
+}
+
+// Image to base64 for storage (since we don't have file storage set up, we store as data URL)
+document.getElementById("productImageFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById("productImageUrl").value = ev.target.result;
+    const preview = document.getElementById("imagePreview");
+    preview.src = ev.target.result;
+    preview.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+});
+
+function openProductModal(product) {
+  document.getElementById("productId").value = product ? product.id : "";
+  document.getElementById("modalTitle").textContent = product ? "Edit Product" : "Add Product";
+  document.getElementById("productTitle").value = product ? product.title : "";
+  document.getElementById("productPrice").value = product ? product.price : "";
+  document.getElementById("productCategory").value = product ? product.category : "Tops";
+  document.getElementById("productSizes").value = product ? (product.sizes||[]).join(",") : "S,M,L,XL";
+  document.getElementById("productTag").value = product ? (product.tag||"") : "";
+  document.getElementById("productDescription").value = product ? (product.description||"") : "";
+  document.getElementById("productImageUrl").value = product ? (product.image_url||"") : "";
+  document.getElementById("productAvailable").checked = product ? product.available : true;
+  const preview = document.getElementById("imagePreview");
+  if (product && product.image_url) { preview.src = product.image_url; preview.style.display = "block"; }
+  else { preview.style.display = "none"; }
+  document.getElementById("productModalOverlay").classList.add("open");
+}
+
+document.getElementById("addProductBtn").addEventListener("click", () => openProductModal(null));
+document.getElementById("cancelProductBtn").addEventListener("click", () => {
+  document.getElementById("productModalOverlay").classList.remove("open");
+});
+
+window.editProduct = (id) => {
+  const p = allProducts.find(x => x.id === id);
+  if (p) openProductModal(p);
+};
+
+window.deleteProduct = async (id) => {
+  if (!confirm("Delete this product? This cannot be undone.")) return;
+  try {
+    await sbFetch(`products?id=eq.${id}`, { method: "DELETE" });
+    showToast("Product deleted");
+    await loadProducts();
+    renderStats();
+  } catch (err) { showToast("Error deleting product"); }
+};
+
+document.getElementById("saveProductBtn").addEventListener("click", async () => {
+  const id = document.getElementById("productId").value;
+  const title = document.getElementById("productTitle").value.trim();
+  const price = parseFloat(document.getElementById("productPrice").value);
+  const category = document.getElementById("productCategory").value;
+  const sizes = document.getElementById("productSizes").value.split(",").map(s=>s.trim()).filter(Boolean);
+  const tag = document.getElementById("productTag").value.trim() || null;
+  const description = document.getElementById("productDescription").value.trim();
+  const image_url = document.getElementById("productImageUrl").value || null;
+  const available = document.getElementById("productAvailable").checked;
+
+  if (!title || !price || sizes.length === 0) { showToast("Please fill in title, price, and sizes"); return; }
+
+  const payload = { title, price, category, sizes, tag, description, image_url, available };
+
+  try {
+    if (id) {
+      await sbFetch(`products?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+      showToast("Product updated");
+    } else {
+      await sbFetch("products", { method: "POST", body: JSON.stringify(payload) });
+      showToast("Product added");
+    }
+    document.getElementById("productModalOverlay").classList.remove("open");
+    await loadProducts();
+    renderStats();
+  } catch (err) {
+    showToast("Error saving product");
+    console.error(err);
+  }
+});
+
+// ── ORDERS ────────────────────────────────────
+async function loadOrders() {
+  allOrders = await sbFetch("orders?select=*&order=created_at.desc");
+  renderOrdersTable();
+}
+
+function renderOrdersTable() {
+  const body = document.getElementById("ordersTableBody");
+  if (allOrders.length === 0) {
+    body.innerHTML = `<tr><td colspan="6" class="empty-msg">No orders yet.</td></tr>`;
+    return;
+  }
+  body.innerHTML = allOrders.map(o => `
+    <tr>
+      <td data-label="Customer">${o.first_name} ${o.last_name}</td>
+      <td data-label="Email">${o.email}</td>
+      <td data-label="Total">₦${Number(o.total).toLocaleString()}</td>
+      <td data-label="Status">
+        <select onchange="updateOrderStatus('${o.id}', this.value)" style="background:#0a0a0a;color:var(--white);border:1px solid rgba(201,192,176,.2);font-family:'Space Mono',monospace;font-size:.55rem;padding:.3rem">
+          <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
+          <option value="confirmed" ${o.status==='confirmed'?'selected':''}>Confirmed</option>
+          <option value="shipped" ${o.status==='shipped'?'selected':''}>Shipped</option>
+          <option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option>
+          <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
+        </select>
+      </td>
+      <td data-label="Date">${new Date(o.created_at).toLocaleDateString()}</td>
+      <td data-label="Actions"><button onclick="viewOrder('${o.id}')" style="font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid rgba(201,192,176,.25);color:var(--bone);padding:.3rem .6rem;cursor:pointer">View</button></td>
+    </tr>`).join("");
+}
+
+window.updateOrderStatus = async (id, status) => {
+  try {
+    await sbFetch(`orders?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
+    showToast("Order status updated");
+    await loadOrders();
+  } catch (err) { showToast("Error updating status"); }
+};
+
+window.viewOrder = (id) => {
+  const o = allOrders.find(x => x.id === id);
+  if (!o) return;
+  const itemsList = (o.items||[]).map(i => `${i.title} (${i.size}) x${i.qty} — ₦${(i.price*i.qty).toLocaleString()}`).join("\\n");
+  alert(`Order Details\\n\\nCustomer: ${o.first_name} ${o.last_name}\\nEmail: ${o.email}\\nPhone: ${o.phone}\\nAddress: ${o.address}, ${o.city}, ${o.state}\\n\\nItems:\\n${itemsList}\\n\\nTotal: ₦${Number(o.total).toLocaleString()}`);
+};
+
+// ── MESSAGES ──────────────────────────────────
+async function loadMessages() {
+  allMessages = await sbFetch("contact_messages?select=*&order=created_at.desc");
+  renderMessagesTable();
+}
+
+function renderMessagesTable() {
+  const body = document.getElementById("messagesTableBody");
+  if (allMessages.length === 0) {
+    body.innerHTML = `<tr><td colspan="5" class="empty-msg">No messages yet.</td></tr>`;
+    return;
+  }
+  body.innerHTML = allMessages.map(m => `
+    <tr>
+      <td data-label="Name">${m.name}</td>
+      <td data-label="Email">${m.email}</td>
+      <td data-label="Subject">${m.subject}</td>
+      <td data-label="Message" style="max-width:300px">${m.message}</td>
+      <td data-label="Date">${new Date(m.created_at).toLocaleDateString()}</td>
+    </tr>`).join("");
+}
+
+// ── NEWSLETTER ────────────────────────────────
+async function loadNewsletter() {
+  allSubscribers = await sbFetch("newsletter_subscribers?select=*&order=created_at.desc");
+  renderNewsletterTable();
+}
+
+function renderNewsletterTable() {
+  const body = document.getElementById("newsletterTableBody");
+  if (allSubscribers.length === 0) {
+    body.innerHTML = `<tr><td colspan="2" class="empty-msg">No subscribers yet.</td></tr>`;
+    return;
+  }
+  body.innerHTML = allSubscribers.map(s => `
+    <tr>
+      <td data-label="Email">${s.email}</td>
+      <td data-label="Date">${new Date(s.created_at).toLocaleDateString()}</td>
+    </tr>`).join("");
+}
+
+// ── INIT ──────────────────────────────────────
+checkAuth();
+</script>
+</body>
+</html>
